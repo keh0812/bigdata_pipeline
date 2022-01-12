@@ -163,7 +163,6 @@ publichKafka를 사용하여 kafka topic t3q에 메시지를 보냈습니다.
 
 
 
-
 6. Spark
 - 빅데이터 분산 처리 엔진, 인메모리 기법
 - 하둡 기반 맵리듀스 작업이 가진 단점을 보완하기 위해서 만들어 진 프레임워크
@@ -174,22 +173,6 @@ publichKafka를 사용하여 kafka topic t3q에 메시지를 보냈습니다.
 (2) 편의성
 (3) 보편성
 (4) 오픈소스
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 1. Elasticsearch Index
@@ -222,14 +205,6 @@ curl –XGET '192.168.81.101:9200/_cat/health?v&pretty’
 
 
 
-
-
-
-
-
-
-
-
 1. NiFi에서 kafka data를 json 형식으로 변환
 
 - replaceText 1 에서,
@@ -258,11 +233,11 @@ from pyspark.sql.types import StructType , StringType
 
 schema = StructType().add("subject", StringType()).add("body",StringType()).add("id",StringType()).add("writedatetime",StringType()).add("fullpathname",StringType())
 
-# Read data from kafka topic
+##  Read data from kafka topic
 
 lines = spark.readStream.format("kafka").option("kafka.bootstrap.servers","192.168.81.101:2181").option("startingOffsets", "latest").option("subscribe","news").load().select(from_json(col("value").cast("string"), schema).alias("parsed_value"))
 
-# Start the stream and query the in-memory table
+##  Start the stream and query the in-memory table
 query=lines.writeStream.format("memory").queryName("t10").start()
 raw= spark.sql("select parsed_value.* from t10")
 
@@ -270,7 +245,7 @@ raw= spark.sql("select parsed_value.* from t10")
 from kafka import KafkaConsumer
 from json import loads 
 
-# topic, broker list 
+##  topic, broker list 
 consumer = KafkaConsumer( 
 'ktopic', bootstrap_servers=['192.168.81.101:9092','192.168.81.102:9092','192.168.81.103:9092'],
  auto_offset_reset='earliest',
@@ -279,8 +254,8 @@ consumer = KafkaConsumer(
  value_deserializer=lambda x: loads(x.decode('utf-8')),
  consumer_timeout_ms=1000 
  ) 
-
-# consumer list를 가져온다 
+ 
+## consumer list를 가져온다 
 
 print('[begin] get consumer list')
 for message in consumer: 
@@ -293,13 +268,6 @@ for message in consumer:
 JSONDecodeError: Invalid control character at: line 1 column 73 (char 72)
 : 스택오버플로우를 참고해보면 이 문제는 json이 UTF-8을 디폴트로 인식하기 때문.
 UTF-8로 인코딩을 바꿔주면 해결.
-
-
-
-
-
-
-
 
 
 
@@ -375,12 +343,6 @@ df.selectExpr("CAST(id AS STRING) AS key", "to_json(struct(*)) AS value")
     .awaitTermination()
 
 
-
-
-
-
-
-
 07/12
 
 vm에 설치했던 jupyter 삭제 후
@@ -414,7 +376,7 @@ cmd에서
 
 
 
-kafkaConsumer.py
+# kafkaConsumer.py
 
 import nb_init
 import os
@@ -440,8 +402,6 @@ pipenv 환경 설정해둔 곳에다가 gitlab에서 코드를 받아, 그 중 l
 
 
 1)
-
-
 
 pipenv install findspark 후 pip freeze 목록에서 findspark 확인.
 그러나 ModuleNotFoundError 남.
@@ -470,7 +430,6 @@ ValueError: Couldn't find Spark, make sure SPARK_HOME env is set or Spark is in 
 hasattr로 해당 속성이 있는 지 확인한다.-> 존재하지 않음.
 
 
-====================================================================
 class ktopic:
     def __init__(self, filename, id, fullpathname, subject, body, writedatetime):
         self.filename = filename
@@ -479,7 +438,6 @@ class ktopic:
         self.subject = subject
         self.body = body
         self.writedatetime = writedatetime
-====================================================================
 
 4)
 - hdfs에 저장하기 (아직 시도 못해봄 .. 미완코드)
@@ -499,7 +457,7 @@ sub_path = ""
 ------------------------------------------------------
 
 [참고]
-# 메타데이터 저장
+## 메타데이터 저장
     save_path = "hdfs://{}/datalake{}/{}".format(con.HADOOP_NODE, sub_path, topic_name)
 
     meta_writer = df.writeStream \
@@ -514,12 +472,12 @@ if __name__ == "__main__":
     app_name = "{}_{}".format(os.environ['CEP_ENV'], os.path.basename(__file__))
     print(app_name)
 
-- e/s 인덱싱
-# elasticsearch 노드 정보
+## e/s 인덱싱
+## elasticsearch 노드 정보
 es_conf = {
     "es.nodes": con.ES_NODES
 }
- # elasticsearch 인덱싱
+## elasticsearch 인덱싱
 csv_df_load.write \
     .format("es") \
     .options(**es_conf) \
@@ -584,7 +542,7 @@ hadoop 3.2
 python 3.6.7
 
 
-시도 1.
+## 시도 1.
 
 jar 추가 후 pyspark 실행 
 ./pyspark —jars /usr/local/spark/spark-3.1.2-bin-hadoop3.2/jars/spark-sql-kafka-0-10_2.12-3.1.2.jar
@@ -627,19 +585,9 @@ df.printSchema()
 #df에서 value 값을 스키마 형태로 변형
 df = df.select(F.from_json(df.value, schema).alias("data")).select("data.*")
 
-
-
-
---------------------------------------------------------
-시도 2.
+## 시도 2.
 
 spark-submit --conf "spark.driver.extraClassPath=$SPARK_HOME/jars/kafka-clients-1.1.0.jar"  --packages org.apache.spark:spark-sql-kafka-0-10_2.11:2.2.0 kafkaTopic.py   로 실행
-
-
-
-
-
-
 
 
 
@@ -663,7 +611,7 @@ schema = StructType() \
         .add("writedatetime", StringType()) \
         .add("body", StringType())
 
-# load data into spark-structured streaming
+## load data into spark-structured streaming
 df = spark \
       .readStream \
       .format("kafka") \
@@ -671,22 +619,8 @@ df = spark \
       .option("subscribe", "ktopic") \
       .load() \
       .select(from_json(col("value").cast("string"), schema).alias("parsed_value"))
-
-# Print output
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      
+## Print output
 
 
 - How to Get Current Date
@@ -706,7 +640,7 @@ df_load = spark.read \
 
 df_load.show()
 
-시도 3.
+## 시도 3.
 
 ./pyspark —jars /usr/local/spark/spark-3.1.2-bin-hadoop3.2/jars/spark-sql-kafka-0-10_2.12-3.1.2.jar,/usr/local/spark/spark-3.1.2-bin-hadoop3.2/jars/commons-pool2-2.6.2.jar 로 실행
 
@@ -725,7 +659,7 @@ time.sleep(10)
 query.stop()
 
 
-시도 4.
+## 시도 4.
 
 ./pyspark —jars /usr/local/spark/spark-3.1.2-bin-hadoop3.2/jars/spark-sql-kafka-0-10_2.12-3.1.2.jar,/usr/local/spark/spark-3.1.2-bin-hadoop3.2/jars/commons-pool2-2.6.2.jar 로 실행
 
@@ -1045,15 +979,6 @@ def ws_fc_core(row):
                 
     logging.warn('done')
     
-''' #10 필터링 마친 데이터프레임 writestream '''
-query = df.writeStream.foreach(ws_fc_core).start()  
-''' #- writestram '''
-query = df \
-        .writeStream \
-        .foreach(foreach_test) \
-        .outputMode("append") \
-        .format("console") \
-        .start()
 
 
 
