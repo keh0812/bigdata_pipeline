@@ -1,4 +1,4 @@
-# pipeline_ojt
+# bigdata_pipeline
 
 centos7 에서 VM 3대 구성하여 분석/저장/수집 pipeline 만들기
 
