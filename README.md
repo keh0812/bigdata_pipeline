@@ -54,15 +54,15 @@ centos7 에서 VM 3대 구성하여 분석/저장/수집 pipeline 만들기
 - 2888, 3888은 zookeeper server간 통신
 - 2181은 zookeeper client
 
-1. 아키텍처 설명
+###  아키텍처 설명
 t3qai01에 sftp서버에서 IP 192.168.0.174 특정 경로의 모든 txt 파일을 가지고 왔습니다. 그 데이터를 NiFi에서 가공하고 Kafka topic에 메시지로 전달합니다.
 spark 분산 처리 엔진을 통해 kafka의 데이터를 꺼내, 파일이름을 할당하고 데이터를 파싱 후 HDFS에 원본파일이름으로 파일 저장,
 E/S 인덱스 생성 id, fileName, fullPathName, subject, body, writeDatetime 으로 필드 구성하는 것이 전체 아키텍처입니다.
 
-2. vm구성
+### vm구성
 vm은 3개로 구성하였습니다.
 
-3. zookeeper
+## zookeeper
 
 - on : /usr/local/zookeeper/bin/zkServer.sh start
 - /usr/local/zookeeper/bin/zkServer.sh status로 follow랑 reader 확인 가능
@@ -73,7 +73,7 @@ vm은 3개로 구성하였습니다.
 
 - 지노드 : 주키퍼 내에 분산 애플리케이션 상태 정보가 저장되는 곳. 분산 애플리케이션들은 각각 클라이언트가 되어 주키퍼 서버들과 연결을 맺은 후 상태 정보를 주고받게 된다. 상태정보는 주키퍼의 지노드(znode)에 Key-Value 형태로 저장되며, 지노드에 저장된 것을 이용하여 분산 애플리케이션들은 서로 데이터를 주고받게 된다.
 
-2. NiFi  8090
+## 2. NiFi  8090
 
 - NiFi는 데이터를 수집하고 workflow를 관리하는 시스템이다. flowfile, processor, connection으로 이루어져 있고 장점은 실시간 처리에 매우 적합하다는 것이다.
 단점은 현재 실행되는 내용을 확인할 수 없는 점이다. 또한 간단한 데이터 조작만 가능하다는 단점이 있지만 spark나 storm과 연동하여 사용해서 보완할 수 있다고 한다.
@@ -87,7 +87,7 @@ NiFi todolist는 데이터에 파일 이름을 추가하여 kafka에 보내는 �
 ReplaceText로 데이터 첫 줄에 filename을 추가해주었고
 publichKafka를 사용하여 kafka topic t3q에 메시지를 보냈다.
 
-3. Kafka : 분산 메시징 시스템
+##  Kafka : 분산 메시징 시스템
 - Broker : kafka 서버이고 zookeeper는 kafka cluster를 구성할 수 있도록 분산 코디네이션 시스템 역할을 한다.
 - Kafka cluster는 zookeeper와 kafka broker로 이루어져있다.
 - Partition : 병렬처리가 가능하도록 토픽을 나눌 수 있고, 많은 양의 메시지 처리를 위해 파티션의 수를 늘려줄 수 있다.
@@ -95,7 +95,7 @@ publichKafka를 사용하여 kafka topic t3q에 메시지를 보냈다.
 - Log : producer가 생성한 메시지
 
 
-4. E/S : 검색 엔진
+##  E/S : 검색 엔진
 - Master Node : 전체 Cluster의 상태에 대한 Meta 정보를 관리하는 Node, 기존 Master Node가 종료되면 새로운 Master Node가 선출
 - Data Node : 색인된 데이터를 실제로 저장하는 Node
 - Master Node도 아니고 Data Node도 아닌 Node 존재. 색인과 검색을 위한 명령과 결과를 전달하는 역할로만 존재
@@ -116,7 +116,7 @@ publichKafka를 사용하여 kafka topic t3q에 메시지를 보냈다.
 - (4) JournalNode : 
 
 
-6. Spark
+## Spark
 - 빅데이터 분산 처리 엔진, 인메모리 기법
 - 하둡 기반 맵리듀스 작업이 가진 단점을 보완하기 위해서 만들어 진 프레임워크
 - 하둡과 달리 인메모리 기법을 활용한 데이터 저장 방식을 제공함으로써 반복적인 데이터 처리가 필요한 분야에서 높은 성능을 보여준다
@@ -158,7 +158,6 @@ curl –XGET '192.168.81.101:9200/_cat/health?v&pretty’
 - 데이터를 Elasticsearch에 저장하는 행위는 색인, 그리고 도큐먼트의 집합 단위는 인덱스
 
 
-## 
 1. NiFi에서 kafka data를 json 형식으로 변환
 
 - replaceText 1 에서,
